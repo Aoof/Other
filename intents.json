@@ -1,0 +1,58 @@
+{"intents": [
+        {"tag": "greeting",
+         "patterns": ["Hi there", "How are you", "Is anyone there?","Hey","Hola", "Hello", "Good day"],
+         "responses": ["Good to see you again", "Hi there, how can I help?"],
+         "context": [""]
+        },
+        {"tag": "goodbye",
+         "patterns": ["Bye", "See you later", "Goodbye", "Nice chatting to you, bye", "Till next time", "cya"],
+         "responses": ["See you!", "Have a nice day", "Bye! Come back again soon."],
+         "context": [""]
+        },
+        {"tag": "thanks",
+         "patterns": ["Thanks", "Thank you", "That's helpful", "Awesome, thanks", "Thanks for helping me"],
+         "responses": ["Happy to help!", "Any time!", "My pleasure"],
+         "context": [""]
+        },
+        {"tag": "noanswer",
+         "patterns": [],
+         "responses": ["Sorry, can't understand you", "Please give me more info", "Not sure I understand"],
+         "context": [""]
+        },
+        {"tag": "options",
+         "patterns": ["How you could help me?", "What you can do?", "What help you provide?", "How you can be helpful?", "What support is offered"],
+         "responses": ["I can provide quotes, stories, links to different indivisuals websites/social media accounts, and play with you knot and crosses, and more."],
+         "context": [""]
+        },
+        {"tag": "quote",
+          "patterns": ["quote", "a saying"],
+          "responses": ["INSERT_QUOTE_HERE"],
+          "context": [""]
+        },
+        {"tag": "skuly",
+          "patterns": ["Skuly twitch website?", "fusion team?"],
+          "responses": ["Twitch: https://www.twitch.tv/fusion_skuly & Discord: https://discord.gg/J5un5xR", "Twitch of the Founder of fusion: https://www.twitch.tv/fusion_skuly & Fusion team's Discord: https://discord.gg/J5un5xR"],
+          "context": [""]
+        },
+        {"tag": "aki",
+          "patterns": ["Aki website?"],
+          "responses": ["Discord: https://discord.gg/tAmvSK"],
+          "context": [""]
+        },
+        {"tag": "badreviews",
+          "patterns": ["You're bad", "suck", "fuck off"],
+          "responses": ["I'm sorry to hear that, please DM <@AoofXD#6486> and tell him what happened.", "That's bad."],
+          "context": [""]
+        },
+        {"tag": "story",
+          "patterns": ["Make me a story.", "Create a tale"],
+          "responses": ["INSERT_STORY_HERE"],
+          "context": [""]
+        },
+        {"tag": "game",
+          "patterns": ["Start knots and crosses", "tic tac toe", "lets play X O", "I wanna join"],
+          "responses": ["Starting Tic Tac Toe...", "Launching Knots and Crosses..."],
+          "context": [""]
+        }
+   ]
+}

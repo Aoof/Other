@@ -2,6 +2,8 @@ import discord
 import dotenv
 import os
 
+from string import ascii_lowercase
+
 # Chatbot dependencies
 
 import nltk
@@ -158,71 +160,108 @@ turn = ""
 
 async def start_Knots_Crosses(message):
     global isGameRunning, board, inAMatch, turn
-    if len(inAMatch) == 2:
+    if len(inAMatch):
+        inAMatch.append(message.author)
         isGameRunning = True
         board = [[0, 0, 0],
                  [0, 0, 0],
                  [0, 0, 0]]
         turn = random.choice(inAMatch)
-
-        winConditions = [[[1, 1, 1],
-                          [0, 0, 0],
-                          [0, 0, 0]],
-                         [[0, 0, 0],
-                          [1, 1, 1],
-                          [0, 0, 0]],
-                         [[0, 0, 0],
-                          [0, 0, 0],
-                          [1, 1, 1]],
-                         [[1, 0, 0],
-                          [1, 0, 0],
-                          [1, 0, 0]],
-                         [[0, 1, 0],
-                          [0, 1, 0],
-                          [0, 1, 0]],
-                         [[0, 0, 1],
-                          [0, 0, 1],
-                          [0, 0, 1]],
-                         [[1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0, 1]],
-                         [[0, 0, 1],
-                          [0, 1, 0],
-                          [1, 0, 0]]]
-
-        winCheck = []
-        for y, xList in enumerate(board):
-            for x, data in enumerate(xList):
-                for winCondition in winConditions:
-                    for winY, xList2 in enumerate(winCondition):
-                        for winX, winData in enumerate(xList2):
-                            if x == winX and y == winY and winData == 1:
-                                winCheck.append(data)
-    else:
+        await Knots_Crosses_event(message, True)
+    if len(inAMatch) < 2:
         inAMatch.append(message.author)
-        await message.channel.send("Please wait for another player to join...")
 
-async def Knots_Crosses_event(message):
+def CheckComb(combination, i):
     global isGameRunning, board, inAMatch, turn
-    if message != "__DISPLAY__(@@@)":
-        turn = inAMatch[0] if turn == inAMatch[1] else inAMatch[1]
+    l = []
+    for comb_x, comb_y in combination:
+        if board[comb_y][comb_x] == i:
+            l.append([comb_x, comb_y])
+    return len(l) == len(combination)
 
+async def Knots_Crosses_event(message, display=False):
+    global isGameRunning, board, inAMatch, turn
+    if len(inAMatch) == 2 and type(message) != str:
+        # Logic here
+        if message.content.lower() in ["a1", "a2", "a3", "b1", "b2", "b3", "c1", "c2", "c3"]:
+            first, second = list(message.content)
+            if len(first) == 1:
+                if first.lower() in ascii_lowercase:
+                    ltr = first
+                    num = second
 
-    embed = discord.Embed(title="*{0} V.S. {1}*".format(inAMatch[0].name, inAMatch[1].name))
+            if len(second) == 1:
+                if second.lower() in ascii_lowercase:
+                    ltr = second
+                    num = first
 
-    printableBoard = []
-    for y, xList in enumerate(board):
-        printableBoard.append([])
-        for x, data in enumerate(xList):
-            if data == 0:
-                printableBoard[-1].append(" ")
-            elif data == 1:
-                printableBoard[-1].append("X")
-            elif data == 2:
-                printableBoard[-1].append("O")
-    embed.add_field(name=f"{turn.name}'s turn.", value="```     a   b   c \n   ┌───┬───┬───┐ \n 1 │ {0[0]} │ {0[1]} │ {0[2]} │ \n   ├───┼───┼───┤ \n 2 │ {1[0]} │ {1[1]} │ {1[2]} │ \n   ├───┼───┼───┤ \n 3 │ {2[0]} │ {2[1]} │ {2[2]} │ \n   └───┴───┴───┘```".format(printableBoard[0], printableBoard[1], printableBoard[2]))
+            if ltr == "a":
+                ltr = 0
+            if ltr == "b":
+                ltr = 1
+            if ltr == "c":
+                ltr = 2
+            num = int(num) - 1
 
-    await message.channel.send(embed=embed)
+            if board[num][ltr] == 0 and message.author == turn:
+                board[num][ltr] = inAMatch.index(turn) + 1
+            else:
+                return
+
+            winner = None
+            availableSpots = []
+
+            for y, xList in enumerate(board):
+                for x, data in enumerate(xList):
+                    if data == 0:
+                        availableSpots.append([x, y])
+
+            combs = [[[0, 0], [1, 0], [2, 0]],
+                     [[0, 1], [1, 1], [2, 1]],
+                     [[0, 2], [1, 2], [2, 2]],
+                     [[0, 0], [0, 1], [0, 2]],
+                     [[1, 0], [1, 1], [1, 2]],
+                     [[2, 0], [2, 1], [2, 2]],
+                     [[0, 0], [1, 1], [2, 2]],
+                     [[2, 0], [1, 1], [0, 2]]]
+
+            for comb in combs:
+                if CheckComb(comb, 1):
+                    winner = inAMatch[0]
+                if CheckComb(comb, 2):
+                    winner = inAMatch[1]
+
+            if winner != None:
+                await message.channel.send("<@%s> IS THE WINNER. 🎊🎉🎉🎊" % winner.id)
+                isGameRunning = False
+                inAMatch = []
+                return
+            elif len(availableSpots) == 0:
+                await message.channel.send("The match between <@{0}> & <@{1}> ended up a tie.".format(inAMatch[0].id, inAMatch[1].id))
+                isGameRunning = False
+                inAMatch = []
+                return
+
+            turn = inAMatch[0] if turn == inAMatch[1] else inAMatch[1]
+
+        # Draw board
+        embed = discord.Embed(title="*{0} V.S. {1}*".format(inAMatch[0].name, inAMatch[1].name))
+
+        printableBoard = []
+        for y, xList in enumerate(board):
+            printableBoard.append([])
+            for x, data in enumerate(xList):
+                if data == 0:
+                    printableBoard[-1].append(" ")
+                elif data == 1:
+                    printableBoard[-1].append("X")
+                elif data == 2:
+                    printableBoard[-1].append("O")
+        embed.add_field(name=f"{turn}'s turn.", value="```     a   b   c \n   ┌───┬───┬───┐ \n 1 │ {0[0]} │ {0[1]} │ {0[2]} │ \n   ├───┼───┼───┤ \n 2 │ {1[0]} │ {1[1]} │ {1[2]} │ \n   ├───┼───┼───┤ \n 3 │ {2[0]} │ {2[1]} │ {2[2]} │ \n   └───┴───┴───┘```".format(printableBoard[0], printableBoard[1], printableBoard[2]))
+
+        await message.channel.send(embed=embed)
+    elif len(inAMatch) != 2:
+        await message.channel.send("Waiting for other players, Write knots and crosses to join <@%s>'s match." % message.author.id)
 
 
 # DISCORD CHAT LOGIC STARTS HERE
@@ -249,7 +288,6 @@ async def on_message(message):
         if res in ["Starting Tic Tac Toe...", "Launching Knots and Crosses..."]:
             await message.channel.send(res)
             await start_Knots_Crosses(message)
-            await Knots_Crosses_event("__DISPLAY__(@@@)")
             return
 
         await message.channel.send(res)
